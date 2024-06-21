@@ -215,7 +215,11 @@
                     events: {
                         'onReady': onPlayerReady,
                         'onStateChange': onPlayerStateChange
-                    }
+                    },
+                    playerVars: {
+                        'autoplay': 1,
+                        'mute': 1,
+                      }
                 });
             }
         }
