@@ -248,55 +248,70 @@
         }
 
         // Function to fetch and render comments
-        function renderComments() {
-            commentsRef.on('value', (snapshot) => {
-                const commentsSection = document.getElementById('comments-section');
-                commentsSection.innerHTML = ''; // Clear existing comments
+      function renderComments() {
+        commentsRef.on("value", (snapshot) => {
+          const commentsSection = document.getElementById("comments-section");
+          commentsSection.innerHTML = ""; // Clear existing comments
 
-                const commentsData = snapshot.val();
-                for (let id in commentsData) {
-                    const comment = commentsData[id];
-                    const commentDiv = document.createElement('div');
-                    commentDiv.className = 'comment';
+          const commentsData = snapshot.val();
+          const commentsArray = [];
 
-                    const userDiv = document.createElement('div');
-                    userDiv.className = 'user';
-                    userDiv.innerHTML = `<i class="far fa-user"></i> ${comment.user}`;
+          // Convert commentsData to an array and parse timestamps
+          for (let id in commentsData) {
+            const comment = commentsData[id];
+            comment.id = id; // Store the id in the comment object for later use
+            comment.timestampDate = new Date(comment.timestamp); // Parse the timestamp
+            commentsArray.push(comment);
+          }
 
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message';
-                    messageDiv.textContent = comment.message;
+          // Sort the comments by timestamp, newest first
+          commentsArray.sort((a, b) => b.timestampDate - a.timestampDate);
 
-                    const timestampDiv = document.createElement('div');
-                    timestampDiv.className = 'timestamp';
-                    timestampDiv.textContent = comment.timestamp;
+          // Render the sorted comments
+          commentsArray.forEach((comment) => {
+            const commentDiv = document.createElement("div");
+            commentDiv.className = "comment";
 
-                    const likeButton = document.createElement('div');
-                    likeButton.className = 'like-button';
-                    likeButton.innerHTML = `
-                        <i class="far fa-thumbs-up"></i>
-                        <span class="like-count">${comment.likes}</span>
-                    `;
-                    likeButton.addEventListener('click', () => likeComment(id, comment.likes));
+            const userDiv = document.createElement("div");
+            userDiv.className = "user";
+            userDiv.innerHTML = `<i class="far fa-user"></i> ${comment.user}`;
 
-                    commentDiv.appendChild(userDiv);
-                    commentDiv.appendChild(messageDiv);
-                    commentDiv.appendChild(timestampDiv);
-                    commentDiv.appendChild(likeButton);
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message";
+            messageDiv.textContent = comment.message;
 
-                    if (comment.video) {
-                        const videoLinkDiv = document.createElement('div');
-                        videoLinkDiv.className = 'video-link';
-                        videoLinkDiv.innerHTML = `<strong>Video Link:</strong> <a href="${comment.video}" target="_blank">${comment.video}</a>`;
-                        commentDiv.appendChild(videoLinkDiv);
-                    }
+            const timestampDiv = document.createElement("div");
+            timestampDiv.className = "timestamp";
+            timestampDiv.textContent = comment.timestamp;
 
-                    commentsSection.appendChild(commentDiv);
-                }
+            const likeButton = document.createElement("div");
+            likeButton.className = "like-button";
+            likeButton.innerHTML = `
+                <i class="far fa-thumbs-up"></i>
+                <span class="like-count">${comment.likes}</span>
+            `;
+            likeButton.addEventListener("click", () =>
+              likeComment(comment.id, comment.likes)
+            );
 
-                updateCommentCount();
-            });
-        }
+            commentDiv.appendChild(userDiv);
+            commentDiv.appendChild(messageDiv);
+            commentDiv.appendChild(timestampDiv);
+            commentDiv.appendChild(likeButton);
+
+            if (comment.video) {
+              const videoLinkDiv = document.createElement("div");
+              videoLinkDiv.className = "video-link";
+              videoLinkDiv.innerHTML = `<strong>Video Link:</strong> <a href="${comment.video}" target="_blank">${comment.video}</a>`;
+              commentDiv.appendChild(videoLinkDiv);
+            }
+
+            commentsSection.appendChild(commentDiv);
+          });
+
+          updateCommentCount();
+        });
+      }
 
         // Function to handle liking a comment
         function likeComment(id, currentLikes) {
